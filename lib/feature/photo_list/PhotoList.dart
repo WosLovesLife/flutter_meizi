@@ -40,6 +40,12 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
   }
 
   _loadData(int page, bool isLoadMore) async {
+    final Completer<Null> completer = new Completer<Null>();
+    new Timer(const Duration(seconds: 2), () async {
+      completer.complete();
+    });
+    await completer.future;
+
     try {
       List<Photo> result = await FuLiApi.request(page);
       if (result.isEmpty) {
@@ -96,12 +102,10 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
     );
   }
 
-  Future<Null> _handleRefresh() {
+  Future<Null> _handleRefresh() async {
     final Completer<Null> completer = new Completer<Null>();
-    new Timer(const Duration(seconds: 3), () async {
-      await _loadData(currentPage = 1, false);
-      completer.complete(null);
-    });
-    return completer.future.then((_) {});
+    await _loadData(currentPage = 1, false);
+    completer.complete(null);
+    return completer.future;
   }
 }
