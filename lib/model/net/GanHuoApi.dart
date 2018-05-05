@@ -4,7 +4,7 @@ import 'dart:async';
 import '../Constants.dart';
 import '../bean/Photo.dart';
 
-class Fuli {
+class FuLiApi {
 
   static Future<List<Photo>> request(int page) async {
     var httpClient = new HttpClient();
@@ -16,9 +16,7 @@ class Fuli {
       );
       var request = await httpClient.getUrl(uri);
       var response = await request.close();
-      if (response.statusCode != HttpStatus.OK) {
-        throw new HttpException('网络错误');
-      }
+      checkResultAndThrowException(response);
 
       var responseBody = await response.transform(UTF8.decoder).join();
       var map = JSON.decode(responseBody);
@@ -42,6 +40,12 @@ class Fuli {
             res['who']);
       }).toList(growable: false);
     } catch (exception) {
+      throw new HttpException('网络错误');
+    }
+  }
+
+  static void checkResultAndThrowException(HttpClientResponse response) {
+    if (response.statusCode != HttpStatus.OK) {
       throw new HttpException('网络错误');
     }
   }

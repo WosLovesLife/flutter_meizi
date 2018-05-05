@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'PhotoList.dart';
+import './feature/photo_list/PhotoList.dart';
 
 void main() => runApp(new MyApp());
 
