@@ -22,8 +22,9 @@ class PhotoList extends StatefulWidget {
   State<StatefulWidget> createState() => new _PhotoListState();
 }
 
-class _PhotoListState extends State<PhotoList> {
+class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
   List<Photo> photos = <Photo>[];
+  List<AnimationController> photoItemAnimations = <AnimationController>[];
   StatusLayoutController statusLayoutController;
   int currentPage = 1;
 
@@ -34,11 +35,11 @@ class _PhotoListState extends State<PhotoList> {
     statusLayoutController = new StatusLayoutController();
 
     if (photos.length <= 0) {
-      _loadData(1);
+      _loadData(1, false);
     }
   }
 
-  _loadData(int page) async {
+  _loadData(int page, bool isLoadMore) async {
     try {
       List<Photo> result = await FuLiApi.request(page);
       if (result.isEmpty) {
@@ -47,11 +48,32 @@ class _PhotoListState extends State<PhotoList> {
       }
       setState(() {
         photos.addAll(result);
+        for (int i = 0; i < result.length; i++) {
+          AnimationController controller = new AnimationController(
+              vsync: this, duration: new Duration(milliseconds: 800));
+          photoItemAnimations.add(controller);
+          new Timer(new Duration(milliseconds: i * 150), () {
+            controller.forward();
+          });
+        }
         statusLayoutController.setStatus(Status.content);
       });
-    } catch (e) {
-      print('加载图片错误 = ' + e);
+    } catch (e, s) {
+      FlutterError.reportError(new FlutterErrorDetails(
+        exception: e,
+        stack: s,
+        library: 'Photo List',
+        context: 'while fetch photos from servers',
+      ));
     }
+  }
+
+  @override
+  void dispose() {
+    for (var anim in photoItemAnimations) {
+      anim.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -63,7 +85,7 @@ class _PhotoListState extends State<PhotoList> {
               child: new ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemBuilder: (BuildContext context, int index) {
-                  return new PhotoItemView(photos[index]);
+                  return new PhotoItemView(photos[index], photoItemAnimations[index]);
                 },
                 itemCount: photos.length,
                 padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -77,7 +99,7 @@ class _PhotoListState extends State<PhotoList> {
   Future<Null> _handleRefresh() {
     final Completer<Null> completer = new Completer<Null>();
     new Timer(const Duration(seconds: 3), () async {
-      await _loadData(currentPage = 1);
+      await _loadData(currentPage = 1, false);
       completer.complete(null);
     });
     return completer.future.then((_) {});
