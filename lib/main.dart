@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import './feature/photo_list/PhotoList.dart';
+import './feature/photo_list/PhotoListContainer.dart';
 
 void main() => runApp(new MyApp());
 
@@ -20,6 +20,6 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new PhotoListFragment();
+    return new PhotoListContainer();
   }
 }

@@ -5,7 +5,7 @@ class StatusLayout extends StatefulWidget {
   final Widget child;
   final StatusLayoutController controller;
 
-  StatusLayout({Key key, this.child, this.controller}) :super(key: key);
+  StatusLayout({Key key, this.child, @required this.controller}) :super(key: key);
 
   @override
   State<StatefulWidget> createState() => new _StatusLayoutState();
