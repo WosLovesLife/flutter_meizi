@@ -3,6 +3,7 @@ import '../../model/bean/Photo.dart';
 import '../../model/net/GanHuoApi.dart';
 import '../../component/StatusLayout.dart';
 import './PhotoItemView.dart';
+import 'dart:async';
 
 class PhotoListFragment extends StatelessWidget {
   @override
@@ -24,6 +25,7 @@ class PhotoList extends StatefulWidget {
 class _PhotoListState extends State<PhotoList> {
   List<Photo> photos = <Photo>[];
   StatusLayoutController statusLayoutController;
+  int currentPage = 1;
 
   @override
   void initState() {
@@ -32,13 +34,13 @@ class _PhotoListState extends State<PhotoList> {
     statusLayoutController = new StatusLayoutController();
 
     if (photos.length <= 0) {
-      _loadData();
+      _loadData(1);
     }
   }
 
-  _loadData() async {
+  _loadData(int page) async {
     try {
-      List<Photo> result = await FuLiApi.request(1);
+      List<Photo> result = await FuLiApi.request(page);
       if (result.isEmpty) {
         statusLayoutController.setStatus(Status.empty);
         return;
@@ -56,15 +58,28 @@ class _PhotoListState extends State<PhotoList> {
   Widget build(BuildContext context) {
     return new Container(
       child: new StatusLayout(
-        controller: statusLayoutController,
-        child: new ListView.builder(
-          itemBuilder: (BuildContext context, int index) {
-            return new PhotoItemView(photos[index]);
-          },
-          itemCount: photos.length,
-          padding: const EdgeInsets.symmetric(vertical: 2.0),
-        ),
+          controller: statusLayoutController,
+          child: new RefreshIndicator(
+              child: new ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemBuilder: (BuildContext context, int index) {
+                  return new PhotoItemView(photos[index]);
+                },
+                itemCount: photos.length,
+                padding: const EdgeInsets.symmetric(vertical: 2.0),
+              ),
+              onRefresh: _handleRefresh
+          )
       ),
     );
+  }
+
+  Future<Null> _handleRefresh() {
+    final Completer<Null> completer = new Completer<Null>();
+    new Timer(const Duration(seconds: 3), () async {
+      await _loadData(currentPage = 1);
+      completer.complete(null);
+    });
+    return completer.future.then((_) {});
   }
 }
