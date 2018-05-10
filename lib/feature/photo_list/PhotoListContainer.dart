@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../model/bean/Photo.dart';
 import '../../model/net/GanHuoApi.dart';
 import '../../component/StatusLayout.dart';
 import '../../component/LoadMoreView.dart';
 import './PhotoItemView.dart';
-import 'dart:async';
+import '../../component/PhotoView.dart';
 
 class PhotoListContainer extends StatelessWidget {
   @override
@@ -45,11 +46,11 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
   }
 
   _loadData(int page, bool isLoadMore) async {
-    final Completer<Null> completer = new Completer<Null>();
-    new Timer(const Duration(seconds: 2), () async {
-      completer.complete();
-    });
-    await completer.future;
+//    final Completer<Null> completer = new Completer<Null>();
+//    new Timer(const Duration(seconds: 2), () async {
+//      completer.complete();
+//    });
+//    await completer.future;
 
     try {
       // fetch data from server
@@ -119,6 +120,24 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  /// 创建一个平移变换
+  /// 跳转过去查看源代码，可以看到有各种各样定义好的变换
+  static SlideTransition createTransition(Animation<double> animation, Widget child) {
+    return new SlideTransition(
+      position: new Tween<Offset>(
+        begin: const Offset(1.0, 0.0),
+        end: const Offset(0.0, 0.0),
+      ).animate(animation),
+      child: new FadeTransition(
+        opacity: new Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).animate(animation),
+        child: child, // child is the value returned by pageBuilder
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Container(
@@ -131,7 +150,23 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
                   if (index == photos.length) {
                     return new LoadMoreView(controller: loadMoreController,);
                   }
-                  return new PhotoItemView(photos[index], photoItemAnimations[index]);
+                  return new GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(new PageRouteBuilder(pageBuilder:
+                            (BuildContext context, Animation<double> animation,
+                            Animation<double> secondaryAnimation) {
+                          return new PhotoView(imageUrl: photos[index].url,
+                            opacityController: photoItemAnimations[index],);
+                        }, transitionsBuilder: (BuildContext context,
+                            Animation<double> animation,
+                            Animation<double> secondaryAnimation,
+                            Widget child,) {
+                          // 添加一个平移动画
+                          return createTransition(animation, child);
+                        }));
+                      },
+                      child: new PhotoItemView(photos[index], photoItemAnimations[index])
+                  );
                 },
                 itemCount: photos.length + 1,
                 padding: const EdgeInsets.symmetric(vertical: 2.0),
