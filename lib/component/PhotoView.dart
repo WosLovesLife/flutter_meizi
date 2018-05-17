@@ -8,8 +8,7 @@ class PhotoView extends StatefulWidget {
   final String imageUrl;
   final AnimationController opacityController;
 
-  PhotoView({Key key, @required this.imageUrl, @required this.opacityController})
-      :super(key: key);
+  PhotoView({Key key, @required this.imageUrl, @required this.opacityController}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => new _LoadMoreViewState();
@@ -21,10 +20,10 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
   AnimationController _controller;
   CurvedAnimation _curvedAnimation;
   Tween<double> _scaleTween;
+  Tween<Offset> _positionTween;
 
   // 放大/和放大的基点的值. 在动画/手势中会实时变化
   double _scale = 1.0;
-  Alignment _alignment = Alignment.center;
   Offset _position = Offset.zero;
 
   // ==== 辅助动画/手势的计算
@@ -44,77 +43,50 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
     _curvedAnimation = new CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn);
   }
 
-  generateScaleAnim(double begin, double end) {
-    _scaleTween = new Tween<double>(begin: begin, end: end);
+  _forwardAnimations() {
+    _scaleTween = new Tween<double>(begin: _scale, end: 3.0);
+
+    var containerSize = MediaQuery.of(context).size;
+    var center = new Offset(containerSize.width, containerSize.height) / 2.0;
+    var delta = center - _downPoint;
+    var positionDelta = (delta * 3.0);
+    _positionTween = new Tween<Offset>(begin: _position, end: _clampPosition(positionDelta, 3.0));
+  }
+
+  _resetAnimations() {
+    _scaleTween = new Tween<double>(begin: _scale, end: 1.0);
+    _positionTween = new Tween<Offset>(begin: _position, end: Offset.zero);
   }
 
   _handleScaleAnim() {
     var newScale = _scaleTween.evaluate(_curvedAnimation);
     setState(() {
-      if (newScale < _scale) { // zoom out
-        var alignTween = new Tween<Alignment>(begin: _alignment, end: new Alignment(0.0, 0.0));
-        _alignment = alignTween.evaluate(_curvedAnimation);
-
-        var positionTween = new Tween<Offset>(begin: _position, end: Offset.zero);
-        _position = positionTween.evaluate(_curvedAnimation);
-      } else { // zoom in
-        var size = context
-            .findRenderObject()
-            .paintBounds
-            .size;
-
-        var centerX = size.width / 2;
-        var centerY = size.height / 2;
-
-        var x = (_downPoint.dx - centerX) / centerX;
-        var y = (_downPoint.dy - centerY) / centerY;
-
-        var alignTween = new Tween<Alignment>(
-            begin: _alignment,
-            end: new Alignment(x, y));
-
-        _alignment = alignTween.evaluate(_curvedAnimation);
-      }
-
       _scale = newScale;
+      _position = _positionTween.evaluate(_curvedAnimation);
     });
   }
 
-  Offset _clampPosition(Offset offset) {
-    var imageSize = _imageKey.currentContext
-        .findRenderObject()
-        .paintBounds
-        .size;
+  Offset _clampPosition(Offset offset, double scale) {
+    var imageSize = _imageKey.currentContext.findRenderObject().paintBounds.size;
 
     final x = offset.dx;
     final y = offset.dy;
-    final computedWidth = imageSize.width * _scale;
-    final computedHeight = imageSize.height * _scale;
-    final screenWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final screenHeight = MediaQuery
-        .of(context)
-        .size
-        .height;
+    final computedWidth = imageSize.width * scale;
+    final computedHeight = imageSize.height * scale;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     final screenHalfX = screenWidth / 2;
     final screenHalfY = screenHeight / 2;
 
-    final double computedX = screenWidth < computedWidth ? x.clamp(
-        0 - (computedWidth / 2) + screenHalfX,
-        computedWidth / 2 - screenHalfX
-    ) : 0.0;
+    final double computedX = screenWidth < computedWidth
+        ? x.clamp(0 - (computedWidth / 2) + screenHalfX, computedWidth / 2 - screenHalfX)
+        : 0.0;
 
-    final double computedY = screenHeight < computedHeight ? y.clamp(
-        0 - (computedHeight / 2) + screenHalfY,
-        computedHeight / 2 - screenHalfY
-    ) : 0.0;
+    final double computedY = screenHeight < computedHeight
+        ? y.clamp(0 - (computedHeight / 2) + screenHalfY, computedHeight / 2 - screenHalfY)
+        : 0.0;
 
-    return new Offset(
-        computedX,
-        computedY
-    );
+    return new Offset(computedX, computedY);
   }
 
   _handleScaleStart(ScaleStartDetails details) {
@@ -137,22 +109,28 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
     setState(() {
       _scale = newScale;
 
+      // 表示没有缩放操作才响应平移操作
       if (_lastScaleValue == _scale) {
-        _position = _clampPosition(positionDelta * (newScale / _lastScaleValue));
+        _position = _clampPosition(positionDelta, _scale);
       }
     });
   }
 
-  _handleScaleEnd(ScaleEndDetails details) {
+  _checkAndReset() {
     if (_scale > 3.0) {
-      generateScaleAnim(_scale, 3.0);
+      _scaleTween = new Tween<double>(begin: _scale, end: 3.0);
+      _positionTween = new Tween<Offset>(begin: _position, end: _position);
       _controller.reset();
       _controller.forward();
     } else if (_scale < 1.0) {
-      generateScaleAnim(_scale, 1.0);
+      _resetAnimations();
       _controller.reset();
       _controller.forward();
     }
+  }
+
+  _handleScaleEnd(ScaleEndDetails details) {
+    _checkAndReset();
   }
 
   @override
@@ -173,15 +151,7 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
         _controller.stop();
       },
       onPanCancel: () {
-        if (_scale > 3.0) {
-          generateScaleAnim(_scale, 3.0);
-          _controller.reset();
-          _controller.forward();
-        } else if (_scale < 1.0) {
-          generateScaleAnim(_scale, 1.0);
-          _controller.reset();
-          _controller.forward();
-        }
+        _checkAndReset();
       },
       child: new GestureDetector(
         onTap: () {
@@ -189,9 +159,9 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
         },
         onDoubleTap: () {
           if (_scale > 1.0) {
-            generateScaleAnim(_scale, 1.0);
+            _resetAnimations();
           } else {
-            generateScaleAnim(_scale, 3.0);
+            _forwardAnimations();
           }
 
           _controller.reset();
@@ -209,7 +179,6 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
             children: <Widget>[
               new Transform(
                 transform: transform,
-//                alignment: alignment,
                 alignment: Alignment.center,
                 child: new CachedNetworkImage(
                   key: _imageKey,
@@ -258,11 +227,9 @@ class _TestPhotoViewState extends State<TestPhotoView> with SingleTickerProvider
       opacityController: controller,
     );
   }
-
 }
 
-void main() =>
-    runApp(new MaterialApp(
+void main() => runApp(new MaterialApp(
       title: 'Mei Zi',
       theme: new ThemeData(
         primarySwatch: Colors.blue,
