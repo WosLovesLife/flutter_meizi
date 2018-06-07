@@ -31,7 +31,6 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
   LoadMoreController loadMoreController;
   int currentPage = 1;
 
-
   @override
   void initState() {
     super.initState();
@@ -71,9 +70,11 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
 
       // display content and reset load more status
       setState(() {
-        if (isLoadMore) { // add more data
+        if (isLoadMore) {
+          // add more data
           photos.addAll(result);
-        } else { // reset data
+        } else {
+          // reset data
           photos.clear();
           photos.addAll(result);
           // clear the animations which in the current PhotoItemView
@@ -85,8 +86,8 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
 
         // make animations for PhotoItemView
         for (int i = 0; i < result.length; i++) {
-          AnimationController controller = new AnimationController(
-              vsync: this, duration: new Duration(milliseconds: 800));
+          AnimationController controller =
+              new AnimationController(vsync: this, duration: new Duration(milliseconds: 800));
           photoItemAnimations.add(controller);
           new Timer(new Duration(milliseconds: i * 150), () {
             controller.forward();
@@ -146,35 +147,37 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
           child: new RefreshIndicator(
               child: new ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                itemBuilder: (BuildContext context, int index) {
-                  if (index == photos.length) {
-                    return new LoadMoreView(controller: loadMoreController,);
-                  }
-                  return new GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(new PageRouteBuilder(pageBuilder:
-                            (BuildContext context, Animation<double> animation,
-                            Animation<double> secondaryAnimation) {
-                          return new PhotoView(imageUrl: photos[index].url,
-                            opacityController: photoItemAnimations[index],);
-                        }, transitionsBuilder: (BuildContext context,
-                            Animation<double> animation,
-                            Animation<double> secondaryAnimation,
-                            Widget child,) {
-                          // 添加一个平移动画
-                          return createTransition(animation, child);
-                        }));
-                      },
-                      child: new PhotoItemView(photos[index], photoItemAnimations[index])
-                  );
-                },
+                itemBuilder: _buildItem,
                 itemCount: photos.length + 1,
                 padding: const EdgeInsets.symmetric(vertical: 2.0),
               ),
-              onRefresh: _handleRefresh
-          )
-      ),
+              onRefresh: _handleRefresh)),
     );
+  }
+
+  Widget _buildItem(BuildContext context, int index) {
+    if (index == photos.length) {
+      return new LoadMoreView(controller: loadMoreController);
+    }
+    return new GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(new PageRouteBuilder(pageBuilder: (BuildContext context,
+                  Animation<double> animation, Animation<double> secondaryAnimation) {
+                return new PhotoView(
+                  imageUrl: photos[index].url,
+                  opacityController: photoItemAnimations[index],
+                );
+              }, transitionsBuilder: (
+                BuildContext context,
+                Animation<double> animation,
+                Animation<double> secondaryAnimation,
+                Widget child,
+              ) {
+                // 添加一个平移动画
+                return createTransition(animation, child);
+              }));
+        },
+        child: new PhotoItemView(photos[index], photoItemAnimations[index]));
   }
 
   Future<Null> _handleRefresh() async {

@@ -171,8 +171,8 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
         onScaleUpdate: _handleScaleUpdate,
         onScaleEnd: _handleScaleEnd,
         child: new Container(
-          width: double.INFINITY,
-          height: double.INFINITY,
+          width: double.infinity,
+          height: double.infinity,
           color: Colors.black,
           alignment: Alignment.center,
           child: new Wrap(

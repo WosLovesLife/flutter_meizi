@@ -27,7 +27,7 @@ class PhotoItemView extends StatelessWidget {
           child: new Card(
             elevation: 4.0,
             child: new Container(
-              width: double.INFINITY,
+              width: double.infinity,
               height: 300.0,
               child: new CachedNetworkImage(
                 fit: BoxFit.cover,

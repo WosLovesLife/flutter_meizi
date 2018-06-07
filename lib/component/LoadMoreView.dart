@@ -43,7 +43,7 @@ class _LoadMoreViewState extends State<LoadMoreView> {
       widget.controller.notifyOnLoadMoreListeners();
     }
     return new Container(
-      width: double.INFINITY,
+      width: double.infinity,
       height: 56.0,
       child: getContent(widget.controller.getStatus()),
       alignment: AlignmentDirectional.center,

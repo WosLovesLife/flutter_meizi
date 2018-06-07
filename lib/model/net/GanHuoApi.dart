@@ -18,8 +18,8 @@ class FuLiApi {
       var response = await request.close();
       checkResultAndThrowException(response);
 
-      var responseBody = await response.transform(UTF8.decoder).join();
-      var map = JSON.decode(responseBody);
+      var responseBody = await response.transform(utf8.decoder).join();
+      var map = json.decode(responseBody);
 
       if (map['error']) {
         throw new HttpException('数据错误');
