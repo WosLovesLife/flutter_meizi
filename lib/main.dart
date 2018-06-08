@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_meizi/feature/home/HomeContainer.dart';
 import './feature/photo_list/PhotoListContainer.dart';
 
 void main() => runApp(new MyApp());
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new PhotoListContainer(),
+      home: new HomeContainer(),
     );
   }
 }

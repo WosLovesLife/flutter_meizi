@@ -87,7 +87,7 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
         // make animations for AndroidItemView
         for (int i = 0; i < result.length; i++) {
           AnimationController controller =
-          new AnimationController(vsync: this, duration: new Duration(milliseconds: 800));
+              new AnimationController(vsync: this, duration: new Duration(milliseconds: 800));
           photoItemAnimations.add(controller);
           new Timer(new Duration(milliseconds: i * 150), () {
             controller.forward();
@@ -162,20 +162,20 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
     return new GestureDetector(
         onTap: () {
           Navigator.of(context).push(new PageRouteBuilder(pageBuilder: (BuildContext context,
-              Animation<double> animation, Animation<double> secondaryAnimation) {
-            return new PhotoView(
-              imageUrl: dataSet[index].url,
-              opacityController: photoItemAnimations[index],
-            );
-          }, transitionsBuilder: (
-              BuildContext context,
-              Animation<double> animation,
-              Animation<double> secondaryAnimation,
-              Widget child,
+                  Animation<double> animation, Animation<double> secondaryAnimation) {
+                return new PhotoView(
+                  imageUrl: dataSet[index].url,
+                  opacityController: photoItemAnimations[index],
+                );
+              }, transitionsBuilder: (
+                BuildContext context,
+                Animation<double> animation,
+                Animation<double> secondaryAnimation,
+                Widget child,
               ) {
-            // 添加一个平移动画
-            return createTransition(animation, child);
-          }));
+                // 添加一个平移动画
+                return createTransition(animation, child);
+              }));
         },
         child: new AndroidItemView(dataSet[index], photoItemAnimations[index]));
   }
