@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../../model/bean/Photo.dart';
+import '../../model/bean/AndroidNews.dart';
 import '../../model/net/GanHuoApi.dart';
 import '../../component/StatusLayout.dart';
 import '../../component/LoadMoreView.dart';
-import './PhotoItemView.dart';
+import './AndroidItemView.dart';
 import '../../component/PhotoView.dart';
 
-class PhotoListContainer extends StatelessWidget {
+class AndroidNewsContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('Mei Zi'),
+        title: new Text('Android news'),
       ),
-      body: new PhotoList(),
+      body: new AndroidNewsList(),
     );
   }
 }
 
-class PhotoList extends StatefulWidget {
+class AndroidNewsList extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => new _PhotoListState();
+  State<StatefulWidget> createState() => new _AndroidNewsListState();
 }
 
-class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
-  List<Photo> photos = <Photo>[];
+class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderStateMixin {
+  List<AndroidNews> dataSet = <AndroidNews>[];
   List<AnimationController> photoItemAnimations = <AnimationController>[];
   StatusLayoutController statusLayoutController;
   LoadMoreController loadMoreController;
@@ -39,7 +39,7 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
     loadMoreController = new LoadMoreController();
     loadMoreController.addListener(_handleLoadMore);
 
-    if (photos.length <= 0) {
+    if (dataSet.length <= 0) {
       _loadData(1, false);
     }
   }
@@ -53,7 +53,7 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
 
     try {
       // fetch data from server
-      List<Photo> result = await FuLiApi.fuli(page);
+      List<AndroidNews> result = await FuLiApi.androidNews(page);
 
       // display empty-content placeholder and reset load more status
       if (result.isEmpty) {
@@ -72,22 +72,22 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
       setState(() {
         if (isLoadMore) {
           // add more data
-          photos.addAll(result);
+          dataSet.addAll(result);
         } else {
           // reset data
-          photos.clear();
-          photos.addAll(result);
-          // clear the animations which in the current PhotoItemView
+          dataSet.clear();
+          dataSet.addAll(result);
+          // clear the animations which in the current AndroidItemView
           for (var anim in photoItemAnimations) {
             anim.dispose();
           }
           photoItemAnimations.clear();
         }
 
-        // make animations for PhotoItemView
+        // make animations for AndroidItemView
         for (int i = 0; i < result.length; i++) {
           AnimationController controller =
-              new AnimationController(vsync: this, duration: new Duration(milliseconds: 800));
+          new AnimationController(vsync: this, duration: new Duration(milliseconds: 800));
           photoItemAnimations.add(controller);
           new Timer(new Duration(milliseconds: i * 150), () {
             controller.forward();
@@ -96,7 +96,7 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
 
         statusLayoutController.setStatus(Status.content);
 
-        if (photos.length >= 10) {
+        if (dataSet.length >= 10) {
           loadMoreController.setStatus(LoadMoreStatus.prepare);
         } else {
           loadMoreController.setStatus(LoadMoreStatus.noMore);
@@ -148,7 +148,7 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
               child: new ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemBuilder: _buildItem,
-                itemCount: photos.length + 1,
+                itemCount: dataSet.length + 1,
                 padding: const EdgeInsets.symmetric(vertical: 2.0),
               ),
               onRefresh: _handleRefresh)),
@@ -156,28 +156,28 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
   }
 
   Widget _buildItem(BuildContext context, int index) {
-    if (index == photos.length) {
+    if (index == dataSet.length) {
       return new LoadMoreView(controller: loadMoreController);
     }
     return new GestureDetector(
         onTap: () {
           Navigator.of(context).push(new PageRouteBuilder(pageBuilder: (BuildContext context,
-                  Animation<double> animation, Animation<double> secondaryAnimation) {
-                return new PhotoView(
-                  imageUrl: photos[index].url,
-                  opacityController: photoItemAnimations[index],
-                );
-              }, transitionsBuilder: (
-                BuildContext context,
-                Animation<double> animation,
-                Animation<double> secondaryAnimation,
-                Widget child,
+              Animation<double> animation, Animation<double> secondaryAnimation) {
+            return new PhotoView(
+              imageUrl: dataSet[index].url,
+              opacityController: photoItemAnimations[index],
+            );
+          }, transitionsBuilder: (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child,
               ) {
-                // 添加一个平移动画
-                return createTransition(animation, child);
-              }));
+            // 添加一个平移动画
+            return createTransition(animation, child);
+          }));
         },
-        child: new PhotoItemView(photos[index], photoItemAnimations[index]));
+        child: new AndroidItemView(dataSet[index], photoItemAnimations[index]));
   }
 
   Future<Null> _handleRefresh() async {

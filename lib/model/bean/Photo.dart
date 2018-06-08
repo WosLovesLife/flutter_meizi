@@ -29,5 +29,5 @@ class Photo {
 
   String get id => _id;
 
-  String get smallUrl => url + '?imageView2/0/w/300';
+  String get smallUrl => url + '?imageView2/0/w/600';
 }
