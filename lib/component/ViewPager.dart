@@ -33,11 +33,12 @@ class _ViewPagerState extends State<ViewPager> with SingleTickerProviderStateMix
       vsync: this,
       duration: new Duration(milliseconds: 280),
     )..addListener(() {
-        setState(() {
-          scrollPercent =
-              lerpDouble(finishScrollStart, finishScrollEnd, finishScrollController.value);
-          widget.controller.notifyListeners(_getIndex(), false);
-        });
+        scrollPercent =
+            lerpDouble(finishScrollStart, finishScrollEnd, finishScrollController.value);
+
+        scrollTo();
+
+        widget.controller.notifyListeners(_getIndex(), false);
       });
 
     widget.controller.addListener(_handleChange);
@@ -67,9 +68,8 @@ class _ViewPagerState extends State<ViewPager> with SingleTickerProviderStateMix
       finishScrollEnd = index.toDouble() / widget.children.length;
       finishScrollController.forward(from: 0.0);
     } else {
-      setState(() {
-        scrollPercent = index.toDouble() / widget.children.length;
-      });
+      scrollPercent = index.toDouble() / widget.children.length;
+      scrollTo();
     }
   }
 
@@ -90,28 +90,34 @@ class _ViewPagerState extends State<ViewPager> with SingleTickerProviderStateMix
     );
   }
 
+  List<TransPage> pages;
+
   List<Widget> _buildChildren() {
     final numCards = widget.children.length;
     int index = 0;
-    return widget.children.map((child) {
+    pages = widget.children.map((child) {
       return _buildChild(index++, numCards, scrollPercent);
     }).toList();
+    return pages;
   }
 
-  Widget _buildChild(int cardIndex, int cardCount, double scrollPercent) {
+  TransPage _buildChild(int cardIndex, int cardCount, double scrollPercent) {
     final cardScrollPercent = scrollPercent / (1 / cardCount);
 
-    return FractionalTranslation(
-      translation: new Offset(cardIndex - cardScrollPercent, 0.0),
-      child: Transform(
-        transform: _buildProjection(cardScrollPercent - cardIndex),
-        child: widget.children[cardIndex],
-      ),
+    return TransPage(
+      pageController: new PageController(new Offset(cardIndex - cardScrollPercent, 0.0)),
+      child: widget.children[cardIndex],
     );
   }
 
-  Matrix4 _buildProjection(double scrollPercent) {
-    return Matrix4.translation(math64.Vector3(scrollPercent, 0.0, 0.0));
+  void scrollTo() {
+    final numCards = widget.children.length;
+    int cardIndex = 0;
+    final cardScrollPercent = scrollPercent / (1 / numCards);
+    pages.map((page) {
+      page.pageController.setTranslation(new Offset(cardIndex - cardScrollPercent, 0.0));
+      ++cardIndex;
+    }).toList();
   }
 
   void _onHorizontalDragStart(DragStartDetails details) {
@@ -125,11 +131,13 @@ class _ViewPagerState extends State<ViewPager> with SingleTickerProviderStateMix
     final singleCardDragPercent = dragDistance / context.size.width;
 
     final numCards = widget.children.length;
-    setState(() {
-      scrollPercent = (startDragPercentScroll + (-singleCardDragPercent / numCards))
-          .clamp(0.0, 1.0 - (1 / numCards));
-      widget.controller.notifyListeners(_getIndex(), false);
-    });
+
+    scrollPercent = (startDragPercentScroll + (-singleCardDragPercent / numCards))
+        .clamp(0.0, 1.0 - (1 / numCards));
+
+    scrollTo();
+
+    widget.controller.notifyListeners(_getIndex(), false);
   }
 
   void _onHorizontalDragEnd(DragEndDetails details) {
@@ -140,17 +148,69 @@ class _ViewPagerState extends State<ViewPager> with SingleTickerProviderStateMix
     if (velocity.dx > 1000) {
       finishScrollEnd = ((scrollPercent * numCards).floorToDouble()) / numCards;
     } else if (velocity.dx < -1000) {
-      finishScrollEnd = ((scrollPercent * numCards).ceilToDouble() ) / numCards;
+      finishScrollEnd = ((scrollPercent * numCards).ceilToDouble()) / numCards;
     } else {
       finishScrollEnd = (scrollPercent * numCards).roundToDouble() / numCards;
     }
 
     finishScrollController.forward(from: 0.0);
 
+    startDrag = null;
+    startDragPercentScroll = null;
+  }
+}
+
+class TransPage extends StatefulWidget {
+  final Widget child;
+  final PageController pageController;
+
+  TransPage({this.child, this.pageController});
+
+  @override
+  _TransPageState createState() => new _TransPageState();
+}
+
+class _TransPageState extends State<TransPage> {
+  Offset _translation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.pageController.addListener(_handleChange);
+    _translation = widget.pageController.getTranslation();
+  }
+
+  @override
+  void didUpdateWidget(TransPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    oldWidget.pageController.removeListener(_handleChange);
+    widget.pageController.addListener(_handleChange);
     setState(() {
-      startDrag = null;
-      startDragPercentScroll = null;
+      _translation = widget.pageController.getTranslation();
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    widget.pageController.removeListener(_handleChange);
+  }
+
+  void _handleChange(Offset translation) {
+    setState(() {
+      _translation = translation;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FractionalTranslation(
+      translation: _translation,
+      child: widget.child,
+    );
   }
 }
 
@@ -184,6 +244,52 @@ class ViewPagerController {
     for (OnStatusChangedListener listener in new List<OnStatusChangedListener>.from(_listeners)) {
       try {
         if (_listeners.contains(listener)) listener(newIndex, withAnim);
+      } catch (exception, stack) {
+        FlutterError.reportError(new FlutterErrorDetails(
+            exception: exception,
+            stack: stack,
+            library: 'StatusLayout',
+            context: 'while notifying listeners for $runtimeType',
+            informationCollector: (StringBuffer information) {
+              information.writeln('The $runtimeType notifying listeners was:');
+              information.write('  $this');
+            }));
+      }
+    }
+  }
+}
+
+typedef void PageListener(Offset translation);
+
+class PageController {
+  final ObserverList<PageListener> _listeners = new ObserverList<PageListener>();
+
+  Offset _translation;
+
+  PageController(this._translation);
+
+  void setTranslation(Offset translation) {
+    assert(translation != null);
+    _translation = translation;
+    notifyListeners(translation);
+  }
+
+  Offset getTranslation() {
+    return _translation;
+  }
+
+  void addListener(PageListener listener) {
+    _listeners.add(listener);
+  }
+
+  void removeListener(PageListener listener) {
+    _listeners.remove(listener);
+  }
+
+  void notifyListeners(Offset translation) {
+    for (PageListener listener in new List<PageListener>.from(_listeners)) {
+      try {
+        if (_listeners.contains(listener)) listener(translation);
       } catch (exception, stack) {
         FlutterError.reportError(new FlutterErrorDetails(
             exception: exception,
