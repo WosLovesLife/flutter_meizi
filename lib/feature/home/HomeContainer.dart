@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_meizi/component/ViewPager.dart';
 import 'package:flutter_meizi/feature/photo_list/PhotoListContainer.dart';
 import 'package:flutter_meizi/feature/android_list/AndroidListContainer.dart';
 
@@ -8,7 +9,7 @@ class HomeContainer extends StatefulWidget {
 }
 
 class _HomeContainerState extends State<HomeContainer> {
-  PageController _pageController;
+  ViewPagerController _pageController;
   int _currentIndex = 0;
   PageStorageKey _photoListKey;
   PageStorageKey _androidNewsListKey;
@@ -17,7 +18,12 @@ class _HomeContainerState extends State<HomeContainer> {
   void initState() {
     super.initState();
 
-    _pageController = new PageController(keepPage: false);
+    _pageController = new ViewPagerController()
+      ..addListener((int index, bool withAnim) {
+        setState(() {
+          _currentIndex = index;
+        });
+      });
 
     _photoListKey = new PageStorageKey('_photoListKey');
     _androidNewsListKey = new PageStorageKey('_androidNewsListKey');
@@ -29,7 +35,7 @@ class _HomeContainerState extends State<HomeContainer> {
       appBar: new AppBar(
         title: new Text('Mei Zi'),
       ),
-      body: PageView(
+      body: ViewPager(
         children: <Widget>[
           new Container(
             key: _photoListKey,
@@ -40,11 +46,6 @@ class _HomeContainerState extends State<HomeContainer> {
             child: new AndroidNewsList(),
           ),
         ],
-        onPageChanged: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
         controller: _pageController,
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -64,11 +65,7 @@ class _HomeContainerState extends State<HomeContainer> {
         ],
         onTap: (int index) {
           _currentIndex = index;
-          _pageController.animateToPage(
-            index,
-            duration: new Duration(milliseconds: 280),
-            curve: Curves.fastOutSlowIn,
-          );
+          _pageController.setIndex(index, false);
         },
         currentIndex: _currentIndex,
       ),
