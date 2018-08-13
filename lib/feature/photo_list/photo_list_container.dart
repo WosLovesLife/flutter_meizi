@@ -35,7 +35,6 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    print('_PhotoListState initState');
 
     statusLayoutController = new StatusLayoutController();
     loadMoreController = new LoadMoreController();
@@ -47,7 +46,6 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
   }
 
   _loadData(int page, bool isLoadMore) async {
-    print('_PhotoListState _loadData');
 //    final Completer<Null> completer = new Completer<Null>();
 //    new Timer(const Duration(seconds: 2), () async {
 //      completer.complete();
@@ -117,7 +115,6 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    print('_PhotoListState dispose');
     for (var anim in photoItemAnimations) {
       anim.dispose();
     }

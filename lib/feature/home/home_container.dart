@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide PageController, PageView;
 import 'package:flutter_meizi/component/view_pager.dart';
 import 'package:flutter_meizi/feature/photo_list/photo_list_container.dart';
 import 'package:flutter_meizi/feature/android_list/android_list_container.dart';
@@ -11,8 +11,6 @@ class HomeContainer extends StatefulWidget {
 class _HomeContainerState extends State<HomeContainer> {
   ViewPagerController _pageController;
   int _currentIndex = 0;
-  PageStorageKey _photoListKey;
-  PageStorageKey _androidNewsListKey;
 
   @override
   void initState() {
@@ -25,8 +23,6 @@ class _HomeContainerState extends State<HomeContainer> {
         });
       });
 
-    _photoListKey = new PageStorageKey('_photoListKey');
-    _androidNewsListKey = new PageStorageKey('_androidNewsListKey');
   }
 
   @override
@@ -38,11 +34,9 @@ class _HomeContainerState extends State<HomeContainer> {
       body: ViewPager(
         children: <Widget>[
           new Container(
-            key: _photoListKey,
             child: new PhotoList(),
           ),
           Container(
-            key: _androidNewsListKey,
             child: new AndroidNewsList(),
           ),
         ],
@@ -65,7 +59,7 @@ class _HomeContainerState extends State<HomeContainer> {
         ],
         onTap: (int index) {
           _currentIndex = index;
-          _pageController.setIndex(index, false);
+          _pageController.setIndex(index, true);
         },
         currentIndex: _currentIndex,
       ),
