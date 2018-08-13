@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:vector_math/vector_math_64.dart' as math64;
 
 typedef void ValueChanged<T>(T value);
 

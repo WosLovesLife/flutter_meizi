@@ -1,8 +1,8 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_advanced_networkimage/flutter_advanced_networkimage.dart';
+import 'package:flutter_advanced_networkimage/transition_to_image.dart';
 
 class PhotoView extends StatefulWidget {
   final String imageUrl;
@@ -180,12 +180,13 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
               new Transform(
                 transform: transform,
                 alignment: Alignment.center,
-                child: new CachedNetworkImage(
+                child: new TransitionToImage(
+                  AdvancedNetworkImage(widget.imageUrl),
                   key: _imageKey,
                   fit: BoxFit.scaleDown,
-                  imageUrl: widget.imageUrl,
-                  placeholder: new CircularProgressIndicator(),
-                  errorWidget: new Icon(Icons.warning, size: 56.0),
+                  placeholder: new Icon(Icons.image, size: 56.0),
+                  width: double.infinity,
+                  height: double.infinity,
                 ),
               ),
             ],

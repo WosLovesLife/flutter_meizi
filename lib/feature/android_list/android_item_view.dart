@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_meizi/component/AnimatedCardView.dart';
-import '../../model/bean/AndroidNews.dart';
+import 'package:flutter_meizi/component/animated_card_view.dart';
+import '../../model/bean/android_news.dart';
+import 'package:flutter_advanced_networkimage/flutter_advanced_networkimage.dart';
+import 'package:flutter_advanced_networkimage/transition_to_image.dart';
 
 class AndroidItemView extends StatelessWidget {
   AndroidItemView(this.androidNews, this.controller);
@@ -18,11 +19,12 @@ class AndroidItemView extends StatelessWidget {
       imageView = Container(
         width: double.infinity,
         height: 300.0,
-        child: new CachedNetworkImage(
+        child: new TransitionToImage(
+          AdvancedNetworkImage(androidNews.smallImage, useDiskCache: true),
           fit: BoxFit.cover,
-          imageUrl: androidNews.smallImage,
-          placeholder: new Icon(Icons.photo, size: 56.0),
-          errorWidget: new Icon(Icons.warning, size: 56.0),
+          placeholder: new Icon(Icons.image, size: 56.0),
+          width: double.infinity,
+          height: double.infinity,
         ),
       );
     } else {

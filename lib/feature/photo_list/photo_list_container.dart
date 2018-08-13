@@ -1,31 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_meizi/component/load_more_view.dart';
+import 'package:flutter_meizi/component/photo_view.dart';
+import 'package:flutter_meizi/component/status_layout.dart';
+import 'package:flutter_meizi/feature/photo_list/photo_item_view.dart';
 import 'dart:async';
-import '../../model/bean/AndroidNews.dart';
-import '../../model/net/GanHuoApi.dart';
-import '../../component/StatusLayout.dart';
-import '../../component/LoadMoreView.dart';
-import './AndroidItemView.dart';
-import '../../component/PhotoView.dart';
 
-class AndroidNewsContainer extends StatelessWidget {
+import 'package:flutter_meizi/model/bean/photo.dart';
+import 'package:flutter_meizi/model/net/gan_huo_api.dart';
+
+class PhotoListContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('Android news'),
+        title: new Text('Mei Zi'),
       ),
-      body: new AndroidNewsList(),
+      body: new PhotoList(),
     );
   }
 }
 
-class AndroidNewsList extends StatefulWidget {
+class PhotoList extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => new _AndroidNewsListState();
+  State<StatefulWidget> createState() => new _PhotoListState();
 }
 
-class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderStateMixin {
-  List<AndroidNews> dataSet = <AndroidNews>[];
+class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
+  List<Photo> photos = <Photo>[];
   List<AnimationController> photoItemAnimations = <AnimationController>[];
   StatusLayoutController statusLayoutController;
   LoadMoreController loadMoreController;
@@ -34,17 +35,19 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
   @override
   void initState() {
     super.initState();
+    print('_PhotoListState initState');
 
     statusLayoutController = new StatusLayoutController();
     loadMoreController = new LoadMoreController();
     loadMoreController.addListener(_handleLoadMore);
 
-    if (dataSet.length <= 0) {
+    if (photos.length <= 0) {
       _loadData(1, false);
     }
   }
 
   _loadData(int page, bool isLoadMore) async {
+    print('_PhotoListState _loadData');
 //    final Completer<Null> completer = new Completer<Null>();
 //    new Timer(const Duration(seconds: 2), () async {
 //      completer.complete();
@@ -53,7 +56,7 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
 
     try {
       // fetch data from server
-      List<AndroidNews> result = await FuLiApi.androidNews(page);
+      List<Photo> result = await FuLiApi.fuli(page);
 
       // display empty-content placeholder and reset load more status
       if (result.isEmpty) {
@@ -72,19 +75,19 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
       setState(() {
         if (isLoadMore) {
           // add more data
-          dataSet.addAll(result);
+          photos.addAll(result);
         } else {
           // reset data
-          dataSet.clear();
-          dataSet.addAll(result);
-          // clear the animations which in the current AndroidItemView
+          photos.clear();
+          photos.addAll(result);
+          // clear the animations which in the current PhotoItemView
           for (var anim in photoItemAnimations) {
             anim.dispose();
           }
           photoItemAnimations.clear();
         }
 
-        // make animations for AndroidItemView
+        // make animations for PhotoItemView
         for (int i = 0; i < result.length; i++) {
           AnimationController controller =
               new AnimationController(vsync: this, duration: new Duration(milliseconds: 800));
@@ -96,7 +99,7 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
 
         statusLayoutController.setStatus(Status.content);
 
-        if (dataSet.length >= 10) {
+        if (photos.length >= 10) {
           loadMoreController.setStatus(LoadMoreStatus.prepare);
         } else {
           loadMoreController.setStatus(LoadMoreStatus.noMore);
@@ -114,6 +117,7 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
 
   @override
   void dispose() {
+    print('_PhotoListState dispose');
     for (var anim in photoItemAnimations) {
       anim.dispose();
     }
@@ -148,7 +152,7 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
               child: new ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemBuilder: _buildItem,
-                itemCount: dataSet.length + 1,
+                itemCount: photos.length + 1,
                 padding: const EdgeInsets.symmetric(vertical: 2.0),
               ),
               onRefresh: _handleRefresh)),
@@ -156,7 +160,7 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
   }
 
   Widget _buildItem(BuildContext context, int index) {
-    if (index == dataSet.length) {
+    if (index == photos.length) {
       return new LoadMoreView(controller: loadMoreController);
     }
     return new GestureDetector(
@@ -164,7 +168,7 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
           Navigator.of(context).push(new PageRouteBuilder(pageBuilder: (BuildContext context,
                   Animation<double> animation, Animation<double> secondaryAnimation) {
                 return new PhotoView(
-                  imageUrl: dataSet[index].url,
+                  imageUrl: photos[index].url,
                   opacityController: photoItemAnimations[index],
                 );
               }, transitionsBuilder: (
@@ -177,7 +181,7 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
                 return createTransition(animation, child);
               }));
         },
-        child: new AndroidItemView(dataSet[index], photoItemAnimations[index]));
+        child: new PhotoItemView(photos[index], photoItemAnimations[index]));
   }
 
   Future<Null> _handleRefresh() async {

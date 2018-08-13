@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_meizi/feature/home/HomeContainer.dart';
-import './feature/photo_list/PhotoListContainer.dart';
+import 'package:flutter_meizi/feature/home/home_container.dart';
 
 void main() => runApp(new MyApp());
 

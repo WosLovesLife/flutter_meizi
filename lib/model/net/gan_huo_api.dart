@@ -2,9 +2,10 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
 import 'dart:core';
-import '../Constants.dart';
-import '../bean/Photo.dart';
-import '../bean/AndroidNews.dart';
+
+import 'package:flutter_meizi/model/constants.dart';
+import 'package:flutter_meizi/model/bean/android_news.dart';
+import 'package:flutter_meizi/model/bean/photo.dart';
 
 class FuLiApi {
   static Future<List<Photo>> fuli(int page) async {

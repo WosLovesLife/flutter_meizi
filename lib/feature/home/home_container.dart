@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_meizi/component/ViewPager.dart';
-import 'package:flutter_meizi/feature/photo_list/PhotoListContainer.dart';
-import 'package:flutter_meizi/feature/android_list/AndroidListContainer.dart';
+import 'package:flutter_meizi/component/view_pager.dart';
+import 'package:flutter_meizi/feature/photo_list/photo_list_container.dart';
+import 'package:flutter_meizi/feature/android_list/android_list_container.dart';
 
 class HomeContainer extends StatefulWidget {
   @override
