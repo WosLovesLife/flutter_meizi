@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
+typedef Widget StatusLayoutBuilder(BuildContext context);
+
 class StatusLayout extends StatefulWidget {
-  final Widget child;
+  final StatusLayoutBuilder builder;
   final StatusLayoutController controller;
 
-  StatusLayout({Key key, this.child, @required this.controller}) :super(key: key);
+  StatusLayout({Key key, this.builder, @required this.controller}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => new _StatusLayoutState();
 }
 
 class _StatusLayoutState extends State<StatusLayout> {
-
   @override
   void initState() {
     super.initState();
@@ -40,27 +41,29 @@ class _StatusLayoutState extends State<StatusLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-      child: getContent(widget.controller.getStatus()),
-    );
-  }
-
-  Widget getContent(Status status) {
-    switch (status) {
+    switch (widget.controller._status) {
       case Status.empty:
         return new Center(
           child: new FlutterLogo(size: 48.0),
         );
       case Status.loading:
         return new Center(
-          child: new CircularProgressIndicator(backgroundColor: Theme
-              .of(context)
-              .primaryColor),
+          child: new CircularProgressIndicator(backgroundColor: Theme.of(context).primaryColor),
         );
       case Status.content:
-        return widget.child;
+        return widget.builder == null ? Wrap() : widget.builder(context);
+      case Status.error:
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text("出现了错误"),
+              Padding(padding: EdgeInsets.only(top: 12.0)),
+            ],
+          ),
+        );
       default:
-        return null;
+        return Wrap();
     }
   }
 }
@@ -75,13 +78,18 @@ enum Status {
 
   // display the content
   content,
+
+  // display the error page and retry button
+  error,
 }
 
 typedef void OnStatusChangedListener(Status status);
 
 class StatusLayoutController {
-  final ObserverList<OnStatusChangedListener> _listeners = new ObserverList<
-      OnStatusChangedListener>();
+  final ObserverList<OnStatusChangedListener> _listeners =
+      new ObserverList<OnStatusChangedListener>();
+
+  StatusLayoutController({Status status}) : _status = status;
 
   Status _status = Status.loading;
 
@@ -106,8 +114,7 @@ class StatusLayoutController {
   void notifyListeners(Status status) {
     for (OnStatusChangedListener listener in new List<OnStatusChangedListener>.from(_listeners)) {
       try {
-        if (_listeners.contains(listener))
-          listener(status);
+        if (_listeners.contains(listener)) listener(status);
       } catch (exception, stack) {
         FlutterError.reportError(new FlutterErrorDetails(
             exception: exception,
@@ -117,8 +124,7 @@ class StatusLayoutController {
             informationCollector: (StringBuffer information) {
               information.writeln('The $runtimeType notifying listeners was:');
               information.write('  $this');
-            }
-        ));
+            }));
       }
     }
   }

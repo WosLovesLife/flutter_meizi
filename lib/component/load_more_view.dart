@@ -53,9 +53,7 @@ class _LoadMoreViewState extends State<LoadMoreView> {
   Widget getContent(LoadMoreStatus status) {
     switch (status) {
       case LoadMoreStatus.idle:
-        return new Center(
-          child: new FlutterLogo(size: 48.0),
-        );
+        return Wrap();
       case LoadMoreStatus.prepare:
       case LoadMoreStatus.loading:
         Color color = Theme
