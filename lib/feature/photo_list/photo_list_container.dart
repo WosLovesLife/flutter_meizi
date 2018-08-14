@@ -7,6 +7,7 @@ import 'dart:async';
 
 import 'package:flutter_meizi/model/bean/photo.dart';
 import 'package:flutter_meizi/model/net/gan_huo_api.dart';
+import 'package:flutter_meizi/route_utils.dart';
 
 class PhotoListContainer extends StatelessWidget {
   @override
@@ -122,37 +123,23 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  /// 创建一个平移变换
-  /// 跳转过去查看源代码，可以看到有各种各样定义好的变换
-  static SlideTransition createTransition(Animation<double> animation, Widget child) {
-    return new SlideTransition(
-      position: new Tween<Offset>(
-        begin: const Offset(1.0, 0.0),
-        end: const Offset(0.0, 0.0),
-      ).animate(animation),
-      child: new FadeTransition(
-        opacity: new Tween<double>(
-          begin: 0.0,
-          end: 1.0,
-        ).animate(animation),
-        child: child, // child is the value returned by pageBuilder
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return new Container(
       child: new StatusLayout(
-          controller: statusLayoutController,
-          child: new RefreshIndicator(
-              child: new ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemBuilder: _buildItem,
-                itemCount: photos.length + 1,
-                padding: const EdgeInsets.symmetric(vertical: 2.0),
-              ),
-              onRefresh: _handleRefresh)),
+        controller: statusLayoutController,
+        builder: (BuildContext context) {
+          return new RefreshIndicator(
+            child: new ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemBuilder: _buildItem,
+              itemCount: photos.length + 1,
+              padding: const EdgeInsets.symmetric(vertical: 2.0),
+            ),
+            onRefresh: _handleRefresh,
+          );
+        },
+      ),
     );
   }
 
@@ -162,21 +149,14 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
     }
     return new GestureDetector(
         onTap: () {
-          Navigator.of(context).push(new PageRouteBuilder(pageBuilder: (BuildContext context,
-                  Animation<double> animation, Animation<double> secondaryAnimation) {
-                return new PhotoView(
-                  imageUrl: photos[index].url,
-                  opacityController: photoItemAnimations[index],
-                );
-              }, transitionsBuilder: (
-                BuildContext context,
-                Animation<double> animation,
-                Animation<double> secondaryAnimation,
-                Widget child,
-              ) {
-                // 添加一个平移动画
-                return createTransition(animation, child);
-              }));
+          Navigator.of(context).push(
+            DefaultRoute(
+              child: new PhotoView(
+                imageUrl: photos[index].url,
+                opacityController: photoItemAnimations[index],
+              ),
+            ),
+          );
         },
         child: new PhotoItemView(photos[index], photoItemAnimations[index]));
   }
