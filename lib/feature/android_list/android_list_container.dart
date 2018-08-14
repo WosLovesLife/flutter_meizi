@@ -114,6 +114,10 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
     }
   }
 
+  void _handleLoadMore() {
+    _loadData(++currentPage, true);
+  }
+
   @override
   void dispose() {
     for (var anim in photoItemAnimations) {
@@ -166,10 +170,5 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
     await _loadData(currentPage = 1, false);
     completer.complete(null);
     return completer.future;
-  }
-
-  void _handleLoadMore() {
-    loadMoreController.setStatus(LoadMoreStatus.loading);
-    _loadData(++currentPage, true);
   }
 }

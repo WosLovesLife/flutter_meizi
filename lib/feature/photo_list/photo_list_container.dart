@@ -169,7 +169,6 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
   }
 
   void _handleLoadMore() {
-    loadMoreController.setStatus(LoadMoreStatus.loading);
     _loadData(++currentPage, true);
   }
 }
