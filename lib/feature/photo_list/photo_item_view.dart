@@ -4,11 +4,10 @@ import 'package:flutter_advanced_networkimage/transition_to_image.dart';
 import 'package:flutter_meizi/model/bean/photo.dart';
 
 class PhotoItemView extends StatelessWidget {
-  PhotoItemView(this.photo, this.controller);
-
   final Photo photo;
-
   final AnimationController controller;
+
+  PhotoItemView({this.photo, this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -20,25 +19,24 @@ class PhotoItemView extends StatelessWidget {
 
     Animation<double> fadeAnimation =
         new Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation);
-
     return new SlideTransition(
-        position: slideAnimation,
-        child: new FadeTransition(
-          opacity: fadeAnimation,
-          child: new Card(
-            elevation: 4.0,
-            child: new Container(
+      position: slideAnimation,
+      child: new FadeTransition(
+        opacity: fadeAnimation,
+        child: new Card(
+          elevation: 4.0,
+          child: IgnorePointer(
+            ignoringSemantics: true,
+            child: TransitionToImage(
+              AdvancedNetworkImage(photo.smallUrl),
+              fit: BoxFit.cover,
+              placeholder: new Icon(Icons.image, size: 56.0),
               width: double.infinity,
-              height: 300.0,
-              child: TransitionToImage(
-                AdvancedNetworkImage(photo.smallUrl),
-                fit: BoxFit.cover,
-                placeholder: new Icon(Icons.image, size: 56.0),
-                width: double.infinity,
-                height: double.infinity,
-              ),
+              height: double.infinity,
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

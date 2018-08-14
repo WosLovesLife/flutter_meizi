@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DefaultRoute extends PageRouteBuilder {
   final Widget child;
 
-  DefaultRoute({this.child});
+  DefaultRoute({this.child}) : super(pageBuilder: (_, __, ___) {});
 
   @override
   Widget buildPage(

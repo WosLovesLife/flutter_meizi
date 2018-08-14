@@ -152,17 +152,18 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
       return new LoadMoreView(controller: loadMoreController);
     }
     return new GestureDetector(
-        onTap: () {
-          Navigator.of(context).push(
-            DefaultRoute(
-              child: new PhotoView(
-                imageUrl: dataSet[index].url,
-                opacityController: photoItemAnimations[index],
-              ),
+      onTap: () {
+        Navigator.of(context).push(
+          DefaultRoute(
+            child: new PhotoView(
+              imageUrl: dataSet[index].url,
+              opacityController: photoItemAnimations[index],
             ),
-          );
-        },
-        child: new AndroidItemView(dataSet[index], photoItemAnimations[index]));
+          ),
+        );
+      },
+      child: new AndroidItemView(dataSet[index], photoItemAnimations[index]),
+    );
   }
 
   Future<Null> _handleRefresh() async {

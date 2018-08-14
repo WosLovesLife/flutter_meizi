@@ -147,18 +147,27 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin {
     if (index == photos.length) {
       return new LoadMoreView(controller: loadMoreController);
     }
-    return new GestureDetector(
-        onTap: () {
-          Navigator.of(context).push(
-            DefaultRoute(
-              child: new PhotoView(
-                imageUrl: photos[index].url,
-                opacityController: photoItemAnimations[index],
-              ),
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          DefaultRoute(
+            child: new PhotoView(
+              imageUrl: photos[index].url,
+              opacityController: photoItemAnimations[index],
             ),
-          );
-        },
-        child: new PhotoItemView(photos[index], photoItemAnimations[index]));
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        height: 300.0,
+        child: PhotoItemView(
+          photo: photos[index],
+          controller: photoItemAnimations[index],
+        ),
+      ),
+    );
   }
 
   Future<Null> _handleRefresh() async {

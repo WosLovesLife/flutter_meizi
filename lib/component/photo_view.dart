@@ -180,13 +180,13 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
               new Transform(
                 transform: transform,
                 alignment: Alignment.center,
-                child: new TransitionToImage(
-                  AdvancedNetworkImage(widget.imageUrl),
-                  key: _imageKey,
-                  fit: BoxFit.scaleDown,
-                  placeholder: new Icon(Icons.image, size: 56.0),
-                  width: double.infinity,
-                  height: double.infinity,
+                child: IgnorePointer(
+                  ignoringSemantics: true,
+                  child: new TransitionToImage(
+                    AdvancedNetworkImage(widget.imageUrl),
+                    key: _imageKey,
+                    placeholder: new Icon(Icons.image, size: 56.0),
+                  ),
                 ),
               ),
             ],

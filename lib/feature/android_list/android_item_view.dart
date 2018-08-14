@@ -19,12 +19,15 @@ class AndroidItemView extends StatelessWidget {
       imageView = Container(
         width: double.infinity,
         height: 300.0,
-        child: new TransitionToImage(
-          AdvancedNetworkImage(androidNews.smallImage, useDiskCache: true),
-          fit: BoxFit.cover,
-          placeholder: new Icon(Icons.image, size: 56.0),
-          width: double.infinity,
-          height: double.infinity,
+        child: IgnorePointer(
+          ignoringSemantics: true,
+          child: new TransitionToImage(
+            AdvancedNetworkImage(androidNews.smallImage, useDiskCache: true),
+            fit: BoxFit.cover,
+            placeholder: new Icon(Icons.image, size: 56.0),
+            width: double.infinity,
+            height: double.infinity,
+          ),
         ),
       );
     } else {
