@@ -157,7 +157,6 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
           DefaultRoute(
             child: new PhotoView(
               imageUrl: dataSet[index].url,
-              opacityController: photoItemAnimations[index],
             ),
           ),
         );

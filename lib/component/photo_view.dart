@@ -6,9 +6,8 @@ import 'package:flutter_advanced_networkimage/transition_to_image.dart';
 
 class PhotoView extends StatefulWidget {
   final String imageUrl;
-  final AnimationController opacityController;
 
-  PhotoView({Key key, @required this.imageUrl, @required this.opacityController}) : super(key: key);
+  PhotoView({Key key, @required this.imageUrl}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => new _LoadMoreViewState();
@@ -62,7 +61,7 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
     var newScale = _scaleTween.evaluate(_curvedAnimation);
     setState(() {
       _scale = newScale;
-      _position = _positionTween.evaluate(_curvedAnimation);
+      _position = _clampPosition(_positionTween.evaluate(_curvedAnimation), newScale);
     });
   }
 
@@ -89,10 +88,15 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
     return new Offset(computedX, computedY);
   }
 
+  Offset _lastImageSize = Offset.zero;
+
   _handleScaleStart(ScaleStartDetails details) {
     _downPoint = details.focalPoint;
     _lastScaleValue = _scale;
     _lastPosition = details.focalPoint - _position;
+
+    Size s = _imageKey.currentContext.findRenderObject().paintBounds.size;
+    _lastImageSize = Offset(s.width * _scale, s.height * _scale);
   }
 
   _handleScaleUpdate(ScaleUpdateDetails details) {
@@ -104,28 +108,43 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
       newScale = 5.0;
     }
 
-    final Offset positionDelta = (details.focalPoint - _lastPosition);
+    // 拖拽带来的变化
+    Offset positionDelta = (details.focalPoint - _lastPosition);
+
+    // 缩放焦点带来的变化
+    Size s = _imageKey.currentContext.findRenderObject().paintBounds.size;
+    Offset newSize = Offset(s.width * newScale, s.height * newScale);
+    Offset deltaSize = newSize - _lastImageSize;
+    Offset halfDeltaSize = deltaSize / 2.0;
+
+    Size half = context.size / 2.0;
+    double ratioX = (half.width - _downPoint.dx) / half.width;
+    double ratioY = (half.height - _downPoint.dy) / half.height;
+
+    Offset extraOffset = Offset(halfDeltaSize.dx * ratioX, halfDeltaSize.dy * ratioY);
+    positionDelta = Offset(positionDelta.dx + extraOffset.dx, positionDelta.dy + extraOffset.dy);
 
     setState(() {
       _scale = newScale;
-
-      // 表示没有缩放操作才响应平移操作
-      if (_lastScaleValue == _scale) {
-        _position = _clampPosition(positionDelta, _scale);
-      }
+      _position = _clampPosition(positionDelta, _scale);
     });
   }
 
   _checkAndReset() {
     if (_scale > 3.0) {
       _scaleTween = new Tween<double>(begin: _scale, end: 3.0);
-      _positionTween = new Tween<Offset>(begin: _position, end: _position);
-      _controller.reset();
-      _controller.forward();
+//      _positionTween = new Tween<Offset>(begin: _position, end: _position);
+//      _controller.reset();
+//      _controller.forward();
+
+      double delta = _scale - 3.0;
+      Offset remove = _position / _scale * delta;
+      print('_scale = $_scale; _position = $_position; remove = $remove');
+      _positionTween = new Tween<Offset>(begin: _position, end: _position - remove);
+      _controller.forward(from: 0.0);
     } else if (_scale < 1.0) {
       _resetAnimations();
-      _controller.reset();
-      _controller.forward();
+      _controller.forward(from: 0.0);
     }
   }
 
@@ -223,17 +242,19 @@ class _TestPhotoViewState extends State<TestPhotoView> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return new PhotoView(
-      imageUrl: 'http://ww2.sinaimg.cn/large/610dc034jw1f3rbikc83dj20dw0kuadt.jpg',
+//      imageUrl: 'http://ww2.sinaimg.cn/large/610dc034jw1f3rbikc83dj20dw0kuadt.jpg',
+      imageUrl: 'http://pic.58pic.com/58pic/12/22/98/77v58PICHMR.jpg',
 //      imageUrl: 'http://img.soogif.com/YpEcZKVZvshJEC2dSrWAXQkhFDjBSyqR.gif',
-      opacityController: controller,
     );
   }
 }
 
-void main() => runApp(new MaterialApp(
-      title: 'Mei Zi',
-      theme: new ThemeData(
-        primarySwatch: Colors.blue,
+void main() => runApp(
+      new MaterialApp(
+        title: 'Mei Zi',
+        theme: new ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: new TestPhotoView(),
       ),
-      home: new TestPhotoView(),
-    ));
+    );

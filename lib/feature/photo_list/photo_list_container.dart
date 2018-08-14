@@ -154,7 +154,6 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin, Au
           DefaultRoute(
             child: new PhotoView(
               imageUrl: photos[index].url,
-              opacityController: photoItemAnimations[index],
             ),
           ),
         );
