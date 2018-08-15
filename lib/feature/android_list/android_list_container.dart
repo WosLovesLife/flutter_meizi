@@ -26,7 +26,7 @@ class AndroidNewsList extends StatefulWidget {
   State<StatefulWidget> createState() => new _AndroidNewsListState();
 }
 
-class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderStateMixin {
+class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<AndroidNewsList> {
   List<AndroidNews> dataSet = <AndroidNews>[];
   List<AnimationController> photoItemAnimations = <AnimationController>[];
   StatusLayoutController statusLayoutController;
@@ -172,4 +172,7 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
     completer.complete(null);
     return completer.future;
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
