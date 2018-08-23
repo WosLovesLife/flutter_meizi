@@ -27,12 +27,14 @@ class PhotoItemView extends StatelessWidget {
           elevation: 4.0,
           child: IgnorePointer(
             ignoringSemantics: true,
-            child: TransitionToImage(
-              AdvancedNetworkImage(photo.smallUrl),
-              fit: BoxFit.cover,
-              placeholder: new Icon(Icons.image, size: 56.0),
-              width: double.infinity,
-              height: double.infinity,
+            child: Hero(
+              tag: photo.smallUrl,
+              child: Image(
+                image: AdvancedNetworkImage(photo.smallUrl),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ),
             ),
           ),
         ),

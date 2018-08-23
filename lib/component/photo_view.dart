@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'dart:ui' hide Image;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_advanced_networkimage/flutter_advanced_networkimage.dart';
@@ -6,8 +6,9 @@ import 'package:flutter_advanced_networkimage/transition_to_image.dart';
 
 class PhotoView extends StatefulWidget {
   final String imageUrl;
+  final String heroTag;
 
-  PhotoView({Key key, @required this.imageUrl}) : super(key: key);
+  PhotoView({Key key, @required this.imageUrl, this.heroTag}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => new _LoadMoreViewState();
@@ -201,10 +202,13 @@ class _LoadMoreViewState extends State<PhotoView> with TickerProviderStateMixin 
                 alignment: Alignment.center,
                 child: IgnorePointer(
                   ignoringSemantics: true,
-                  child: new TransitionToImage(
-                    AdvancedNetworkImage(widget.imageUrl),
-                    key: _imageKey,
-                    placeholder: new Icon(Icons.image, size: 56.0),
+                  child: Hero(
+                    tag: widget.heroTag,
+                    child: new Image(
+                      image: AdvancedNetworkImage(widget.imageUrl),
+                      key: _imageKey,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),

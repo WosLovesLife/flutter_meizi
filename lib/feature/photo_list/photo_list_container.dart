@@ -155,11 +155,16 @@ class _PhotoListState extends State<PhotoList>
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          DefaultRoute(
-            child: new PhotoView(
-              imageUrl: photos[index].url,
-            ),
-          ),
+          PageRouteBuilder(pageBuilder: (BuildContext context, Animation<double> animation,
+              Animation<double> secondaryAnimation) {
+            return FadeTransition(
+              opacity: Tween<double>(begin: 0.0, end: 1.0).animate(animation),
+              child: new PhotoView(
+                imageUrl: photos[index].url,
+                heroTag: photos[index].smallUrl,
+              ),
+            );
+          }),
         );
       },
       child: Container(
