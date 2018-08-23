@@ -26,12 +26,16 @@ class AndroidNewsList extends StatefulWidget {
   State<StatefulWidget> createState() => new _AndroidNewsListState();
 }
 
-class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<AndroidNewsList> {
+class _AndroidNewsListState extends State<AndroidNewsList>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<AndroidNewsList> {
   List<AndroidNews> dataSet = <AndroidNews>[];
   List<AnimationController> photoItemAnimations = <AnimationController>[];
   StatusLayoutController statusLayoutController;
   LoadMoreController loadMoreController;
   int currentPage = 1;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -154,12 +158,12 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
     return new GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          DefaultRoute(
-            child: new PhotoView(
-              imageUrl: dataSet[index].url,
-            ),
-          ),
-        );
+              DefaultRoute(
+                child: new PhotoView(
+                  imageUrl: dataSet[index].url,
+                ),
+              ),
+            );
       },
       child: new AndroidItemView(dataSet[index], photoItemAnimations[index]),
     );
@@ -171,7 +175,4 @@ class _AndroidNewsListState extends State<AndroidNewsList> with TickerProviderSt
     completer.complete(null);
     return completer.future;
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

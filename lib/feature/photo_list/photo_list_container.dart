@@ -21,17 +21,21 @@ class PhotoListContainer extends StatelessWidget {
   }
 }
 
-class PhotoList extends StatefulWidget{
+class PhotoList extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => new _PhotoListState();
 }
 
-class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<PhotoList> {
+class _PhotoListState extends State<PhotoList>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin<PhotoList> {
   List<Photo> photos = <Photo>[];
   List<AnimationController> photoItemAnimations = <AnimationController>[];
   StatusLayoutController statusLayoutController;
   LoadMoreController loadMoreController;
   int currentPage = 1;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -179,7 +183,4 @@ class _PhotoListState extends State<PhotoList> with TickerProviderStateMixin, Au
   void _handleLoadMore() {
     _loadData(++currentPage, true);
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
